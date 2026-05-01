@@ -21,7 +21,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         # remove the question mark button
         self.setWindowFlags(
-            self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint
+            self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint
         )
 
         # build UI
