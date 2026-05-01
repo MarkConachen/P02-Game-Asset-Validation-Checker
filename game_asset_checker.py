@@ -10,6 +10,11 @@ def maya_main_window():
     return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 
 
+# helper to add text to report box
+def add_report(report_box, message):
+    report_box.append(message)
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -33,10 +38,16 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
 
+        self.report_box = QtWidgets.QTextEdit()
+        self.report_box.setReadOnly(True)
+        self.report_box.setMinimumHeight(220)
+
     # layout
     def build_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addWidget(self.title_label)
+        main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
+        main_layout.addWidget(self.report_box)
 
 
 # show window
