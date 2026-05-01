@@ -10,6 +10,11 @@ def maya_main_window():
     return wrapInstance(int(main_window_ptr), QtWidgets.QWidget)
 
 
+# get selected transform objects
+def get_selection():
+    return cmds.ls(selection=True, type="transform")
+
+
 # helper to add text to report box
 def add_report(report_box, message):
     report_box.append(message)
