@@ -24,6 +24,20 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint
         )
 
+        # build UI
+        self.build_ui()
+        self.build_layout()
+
+    # widgets
+    def build_ui(self):
+        self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
+        self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+
+    # layout
+    def build_layout(self):
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.addWidget(self.title_label)
+
 
 # show window
 def show_window():
