@@ -37,11 +37,13 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         # build UI
         self.build_ui()
         self.build_layout()
+        self.connect_ui()
 
     # widgets
     def build_ui(self):
         self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.validate_button = QtWidgets.QPushButton("Run Validation")
 
         self.report_box = QtWidgets.QTextEdit()
         self.report_box.setReadOnly(True)
@@ -51,8 +53,29 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def build_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.validate_button)
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
         main_layout.addWidget(self.report_box)
+
+    # connect buttons
+    def connect_ui(self):
+        self.validate_button.clicked.connect(self.run_validation)
+
+    # run validation
+    def run_validation(self, *args):
+        self.report_box.clear()
+
+        selection = get_selection()
+
+        if not selection:
+            add_report(self.report_box, "No objects selected.")
+            cmds.warning("No objects selected.")
+            return
+
+        add_report(self.report_box, "Selected objects:")
+
+        for obj in selection:
+            add_report(self.report_box, "- " + obj)
 
 
 # show window
