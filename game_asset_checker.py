@@ -26,6 +26,17 @@ def has_default_name(obj):
     return obj.startswith(default_names)
 
 
+# check bad name characters
+def has_invalid_name(obj):
+    invalid_chars = [" ", "-", ".", ":", ";"]
+
+    for char in invalid_chars:
+        if char in obj:
+            return True
+
+    return False
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -87,6 +98,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
             if has_default_name(obj):
                 add_report(self.report_box, "- Warning: Object has a default Maya name.")
+            elif has_invalid_name(obj):
+                add_report(self.report_box, "- Warning: Object name contains invalid characters.")
             else:
                 add_report(self.report_box, "- Naming check passed.")
 
