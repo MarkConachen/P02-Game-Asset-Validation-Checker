@@ -20,6 +20,12 @@ def add_report(report_box, message):
     report_box.append(message)
 
 
+# check default maya names
+def has_default_name(obj):
+    default_names = ("pCube", "pSphere", "pCylinder", "pPlane", "polySurface")
+    return obj.startswith(default_names)
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -72,10 +78,17 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             cmds.warning("No objects selected.")
             return
 
-        add_report(self.report_box, "Selected objects:")
+        add_report(self.report_box, "VALIDATION REPORT")
+        add_report(self.report_box, "-------------------------")
 
         for obj in selection:
-            add_report(self.report_box, "- " + obj)
+            add_report(self.report_box, "")
+            add_report(self.report_box, "Object: " + obj)
+
+            if has_default_name(obj):
+                add_report(self.report_box, "- Warning: Object has a default Maya name.")
+            else:
+                add_report(self.report_box, "- Naming check passed.")
 
 
 # show window
