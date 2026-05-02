@@ -37,6 +37,20 @@ def has_invalid_name(obj):
     return False
 
 
+# check rotation and scale
+def has_bad_transforms(obj):
+    rotate = cmds.getAttr(obj + ".rotate")[0]
+    scale = cmds.getAttr(obj + ".scale")[0]
+
+    if rotate != (0, 0, 0):
+        return True
+
+    if scale != (1, 1, 1):
+        return True
+
+    return False
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -60,6 +74,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def build_ui(self):
         self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
         self.report_box = QtWidgets.QTextEdit()
@@ -96,12 +111,19 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             add_report(self.report_box, "")
             add_report(self.report_box, "Object: " + obj)
 
+            # name checks
             if has_default_name(obj):
                 add_report(self.report_box, "- Warning: Object has a default Maya name.")
             elif has_invalid_name(obj):
                 add_report(self.report_box, "- Warning: Object name contains invalid characters.")
             else:
                 add_report(self.report_box, "- Naming check passed.")
+
+            # transform check
+            if has_bad_transforms(obj):
+                add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
+            else:
+                add_report(self.report_box, "- Transform check passed.")
 
 
 # show window
