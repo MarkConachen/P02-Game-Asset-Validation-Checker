@@ -75,8 +75,17 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
 
+        # checkboxes
+        self.name_checkbox = QtWidgets.QCheckBox("Check Names")
+        self.name_checkbox.setChecked(True)
+
+        self.transform_checkbox = QtWidgets.QCheckBox("Check Rotation and Scale")
+        self.transform_checkbox.setChecked(True)
+
+        # button
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
+        # report box
         self.report_box = QtWidgets.QTextEdit()
         self.report_box.setReadOnly(True)
         self.report_box.setMinimumHeight(220)
@@ -84,8 +93,15 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     # layout
     def build_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
+
         main_layout.addWidget(self.title_label)
+
+        main_layout.addWidget(QtWidgets.QLabel("Validation Checks"))
+        main_layout.addWidget(self.name_checkbox)
+        main_layout.addWidget(self.transform_checkbox)
+
         main_layout.addWidget(self.validate_button)
+
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
         main_layout.addWidget(self.report_box)
 
@@ -115,22 +131,24 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
             issues = 0
 
-            # name checks
-            if has_default_name(obj):
-                add_report(self.report_box, "- Warning: Object has a default Maya name.")
-                issues += 1
-            elif has_invalid_name(obj):
-                add_report(self.report_box, "- Warning: Object name contains invalid characters.")
-                issues += 1
-            else:
-                add_report(self.report_box, "- Naming check passed.")
+            # name checks (only if checkbox is on)
+            if self.name_checkbox.isChecked():
+                if has_default_name(obj):
+                    add_report(self.report_box, "- Warning: Object has a default Maya name.")
+                    issues += 1
+                elif has_invalid_name(obj):
+                    add_report(self.report_box, "- Warning: Object name contains invalid characters.")
+                    issues += 1
+                else:
+                    add_report(self.report_box, "- Naming check passed.")
 
-            # transform check
-            if has_bad_transforms(obj):
-                add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
-                issues += 1
-            else:
-                add_report(self.report_box, "- Transform check passed.")
+            # transform check (only if checkbox is on)
+            if self.transform_checkbox.isChecked():
+                if has_bad_transforms(obj):
+                    add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
+                    issues += 1
+                else:
+                    add_report(self.report_box, "- Transform check passed.")
 
             # result per object
             if issues == 0:
