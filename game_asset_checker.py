@@ -107,23 +107,42 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "VALIDATION REPORT")
         add_report(self.report_box, "-------------------------")
 
+        total_issues = 0
+
         for obj in selection:
             add_report(self.report_box, "")
             add_report(self.report_box, "Object: " + obj)
 
+            issues = 0
+
             # name checks
             if has_default_name(obj):
                 add_report(self.report_box, "- Warning: Object has a default Maya name.")
+                issues += 1
             elif has_invalid_name(obj):
                 add_report(self.report_box, "- Warning: Object name contains invalid characters.")
+                issues += 1
             else:
                 add_report(self.report_box, "- Naming check passed.")
 
             # transform check
             if has_bad_transforms(obj):
                 add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
+                issues += 1
             else:
                 add_report(self.report_box, "- Transform check passed.")
+
+            # result per object
+            if issues == 0:
+                add_report(self.report_box, "- Result: Asset passed current checks.")
+            else:
+                add_report(self.report_box, "- Result: " + str(issues) + " issue(s) found.")
+
+            total_issues += issues
+
+        add_report(self.report_box, "")
+        add_report(self.report_box, "-------------------------")
+        add_report(self.report_box, "Total issues found: " + str(total_issues))
 
 
 # show window
