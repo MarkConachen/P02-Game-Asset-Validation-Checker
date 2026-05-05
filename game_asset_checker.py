@@ -51,6 +51,12 @@ def has_bad_transforms(obj):
     return False
 
 
+# check object position
+def is_at_origin(obj):
+    translate = cmds.getAttr(obj + ".translate")[0]
+    return translate == (0, 0, 0)
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -82,6 +88,9 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.transform_checkbox = QtWidgets.QCheckBox("Check Rotation and Scale")
         self.transform_checkbox.setChecked(True)
 
+        self.origin_checkbox = QtWidgets.QCheckBox("Check World Origin")
+        self.origin_checkbox.setChecked(True)
+
         # button
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
@@ -99,6 +108,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(QtWidgets.QLabel("Validation Checks"))
         main_layout.addWidget(self.name_checkbox)
         main_layout.addWidget(self.transform_checkbox)
+        main_layout.addWidget(self.origin_checkbox)
 
         main_layout.addWidget(self.validate_button)
 
@@ -131,7 +141,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
             issues = 0
 
-            # name checks (only if checkbox is on)
+            # name checks
             if self.name_checkbox.isChecked():
                 if has_default_name(obj):
                     add_report(self.report_box, "- Warning: Object has a default Maya name.")
@@ -142,13 +152,21 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Naming check passed.")
 
-            # transform check (only if checkbox is on)
+            # transform check
             if self.transform_checkbox.isChecked():
                 if has_bad_transforms(obj):
                     add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
                     issues += 1
                 else:
                     add_report(self.report_box, "- Transform check passed.")
+
+            # origin check
+            if self.origin_checkbox.isChecked():
+                if not is_at_origin(obj):
+                    add_report(self.report_box, "- Warning: Object is not at world origin.")
+                    issues += 1
+                else:
+                    add_report(self.report_box, "- Origin check passed.")
 
             # result per object
             if issues == 0:
