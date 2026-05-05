@@ -57,6 +57,22 @@ def is_at_origin(obj):
     return translate == (0, 0, 0)
 
 
+# check construction history
+def has_history(obj):
+    history = cmds.listHistory(obj, pruneDagObjects=True)
+
+    if not history:
+        return False
+
+    for node in history:
+        node_type = cmds.nodeType(node)
+
+        if node_type not in ["transform", "mesh", "shadingEngine"]:
+            return True
+
+    return False
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -91,6 +107,9 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.origin_checkbox = QtWidgets.QCheckBox("Check World Origin")
         self.origin_checkbox.setChecked(True)
 
+        self.history_checkbox = QtWidgets.QCheckBox("Check Construction History")
+        self.history_checkbox.setChecked(True)
+
         # button
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
@@ -109,6 +128,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.name_checkbox)
         main_layout.addWidget(self.transform_checkbox)
         main_layout.addWidget(self.origin_checkbox)
+        main_layout.addWidget(self.history_checkbox)
 
         main_layout.addWidget(self.validate_button)
 
@@ -167,6 +187,14 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                     issues += 1
                 else:
                     add_report(self.report_box, "- Origin check passed.")
+
+            # history check
+            if self.history_checkbox.isChecked():
+                if has_history(obj):
+                    add_report(self.report_box, "- Warning: Object has construction history.")
+                    issues += 1
+                else:
+                    add_report(self.report_box, "- History check passed.")
 
             # result per object
             if issues == 0:
