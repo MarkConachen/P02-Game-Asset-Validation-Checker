@@ -89,6 +89,24 @@ def has_material(obj):
     return False
 
 
+# check non-manifold geometry
+def has_nonmanifold_geometry(obj):
+    try:
+        result = cmds.polyInfo(obj, nonManifoldEdges=True)
+        return result is not None
+    except:
+        return False
+
+
+# check lamina faces
+def has_lamina_faces(obj):
+    try:
+        result = cmds.polyInfo(obj, laminaFaces=True)
+        return result is not None
+    except:
+        return False
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -129,6 +147,9 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.material_checkbox = QtWidgets.QCheckBox("Check Material Assignment")
         self.material_checkbox.setChecked(True)
 
+        self.geometry_checkbox = QtWidgets.QCheckBox("Check Geometry Issues")
+        self.geometry_checkbox.setChecked(True)
+
         # button
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
@@ -149,6 +170,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.origin_checkbox)
         main_layout.addWidget(self.history_checkbox)
         main_layout.addWidget(self.material_checkbox)
+        main_layout.addWidget(self.geometry_checkbox)
 
         main_layout.addWidget(self.validate_button)
 
@@ -223,6 +245,23 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Warning: Object does not have a material assigned.")
                     issues += 1
+
+            # geometry check
+            if self.geometry_checkbox.isChecked():
+                geometry_issue = False
+
+                if has_nonmanifold_geometry(obj):
+                    add_report(self.report_box, "- Warning: Non-manifold geometry detected.")
+                    geometry_issue = True
+
+                if has_lamina_faces(obj):
+                    add_report(self.report_box, "- Warning: Lamina faces detected.")
+                    geometry_issue = True
+
+                if geometry_issue:
+                    issues += 1
+                else:
+                    add_report(self.report_box, "- Geometry check passed.")
 
             # result per object
             if issues == 0:
