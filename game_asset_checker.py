@@ -73,6 +73,22 @@ def has_history(obj):
     return False
 
 
+# check material assignment
+def has_material(obj):
+    shapes = cmds.listRelatives(obj, shapes=True, fullPath=True)
+
+    if not shapes:
+        return False
+
+    for shape in shapes:
+        shading_groups = cmds.listConnections(shape, type="shadingEngine")
+
+        if shading_groups:
+            return True
+
+    return False
+
+
 # UI class
 class GameAssetCheckerUI(QtWidgets.QDialog):
 
@@ -110,6 +126,9 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.history_checkbox = QtWidgets.QCheckBox("Check Construction History")
         self.history_checkbox.setChecked(True)
 
+        self.material_checkbox = QtWidgets.QCheckBox("Check Material Assignment")
+        self.material_checkbox.setChecked(True)
+
         # button
         self.validate_button = QtWidgets.QPushButton("Run Validation")
 
@@ -129,6 +148,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.transform_checkbox)
         main_layout.addWidget(self.origin_checkbox)
         main_layout.addWidget(self.history_checkbox)
+        main_layout.addWidget(self.material_checkbox)
 
         main_layout.addWidget(self.validate_button)
 
@@ -195,6 +215,14 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                     issues += 1
                 else:
                     add_report(self.report_box, "- History check passed.")
+
+            # material check
+            if self.material_checkbox.isChecked():
+                if has_material(obj):
+                    add_report(self.report_box, "- Material check passed.")
+                else:
+                    add_report(self.report_box, "- Warning: Object does not have a material assigned.")
+                    issues += 1
 
             # result per object
             if issues == 0:
