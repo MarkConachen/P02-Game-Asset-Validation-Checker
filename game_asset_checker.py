@@ -150,8 +150,9 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.geometry_checkbox = QtWidgets.QCheckBox("Check Geometry Issues")
         self.geometry_checkbox.setChecked(True)
 
-        # button
+        # buttons
         self.validate_button = QtWidgets.QPushButton("Run Validation")
+        self.clear_button = QtWidgets.QPushButton("Clear Report")
 
         # report box
         self.report_box = QtWidgets.QTextEdit()
@@ -173,6 +174,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.geometry_checkbox)
 
         main_layout.addWidget(self.validate_button)
+        main_layout.addWidget(self.clear_button)
 
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
         main_layout.addWidget(self.report_box)
@@ -180,10 +182,15 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     # connect buttons
     def connect_ui(self):
         self.validate_button.clicked.connect(self.run_validation)
+        self.clear_button.clicked.connect(self.clear_report)
+
+    # clear report
+    def clear_report(self):
+        self.report_box.clear()
 
     # run validation
     def run_validation(self, *args):
-        self.report_box.clear()
+        self.clear_report()
 
         selection = get_selection()
 
