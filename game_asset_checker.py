@@ -153,6 +153,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         # buttons
         self.validate_button = QtWidgets.QPushButton("Run Validation")
         self.clear_button = QtWidgets.QPushButton("Clear Report")
+        self.fix_button = QtWidgets.QPushButton("Fix Safe Issues")
 
         # report box
         self.report_box = QtWidgets.QTextEdit()
@@ -174,6 +175,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.geometry_checkbox)
 
         main_layout.addWidget(self.validate_button)
+        main_layout.addWidget(self.fix_button)
         main_layout.addWidget(self.clear_button)
 
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
@@ -183,6 +185,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def connect_ui(self):
         self.validate_button.clicked.connect(self.run_validation)
         self.clear_button.clicked.connect(self.clear_report)
+        self.fix_button.clicked.connect(self.fix_safe_issues)
 
     # clear report
     def clear_report(self):
@@ -210,7 +213,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
             issues = 0
 
-            # name checks
             if self.name_checkbox.isChecked():
                 if has_default_name(obj):
                     add_report(self.report_box, "- Warning: Object has a default Maya name.")
@@ -221,7 +223,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Naming check passed.")
 
-            # transform check
             if self.transform_checkbox.isChecked():
                 if has_bad_transforms(obj):
                     add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
@@ -229,7 +230,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Transform check passed.")
 
-            # origin check
             if self.origin_checkbox.isChecked():
                 if not is_at_origin(obj):
                     add_report(self.report_box, "- Warning: Object is not at world origin.")
@@ -237,7 +237,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Origin check passed.")
 
-            # history check
             if self.history_checkbox.isChecked():
                 if has_history(obj):
                     add_report(self.report_box, "- Warning: Object has construction history.")
@@ -245,7 +244,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- History check passed.")
 
-            # material check
             if self.material_checkbox.isChecked():
                 if has_material(obj):
                     add_report(self.report_box, "- Material check passed.")
@@ -253,7 +251,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                     add_report(self.report_box, "- Warning: Object does not have a material assigned.")
                     issues += 1
 
-            # geometry check
             if self.geometry_checkbox.isChecked():
                 geometry_issue = False
 
@@ -270,7 +267,6 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Geometry check passed.")
 
-            # result per object
             if issues == 0:
                 add_report(self.report_box, "- Result: Asset passed current checks.")
             else:
@@ -281,6 +277,31 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "")
         add_report(self.report_box, "-------------------------")
         add_report(self.report_box, "Total issues found: " + str(total_issues))
+
+    # fix safe issues
+    def fix_safe_issues(self, *args):
+        selection = get_selection()
+
+        if not selection:
+            add_report(self.report_box, "No objects selected.")
+            cmds.warning("No objects selected.")
+            return
+
+        add_report(self.report_box, "")
+        add_report(self.report_box, "FIXING SAFE ISSUES")
+        add_report(self.report_box, "-------------------------")
+
+        cmds.makeIdentity(selection, apply=True, t=0, r=1, s=1, n=0)
+        add_report(self.report_box, "- Rotation and scale frozen.")
+
+        cmds.delete(selection, ch=True)
+        add_report(self.report_box, "- Construction history deleted.")
+
+        for obj in selection:
+            cmds.xform(obj, centerPivots=True)
+
+        add_report(self.report_box, "- Pivots centered.")
+        add_report(self.report_box, "Safe fixes complete.")
 
 
 # show window
