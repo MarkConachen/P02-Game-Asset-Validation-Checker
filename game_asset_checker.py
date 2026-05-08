@@ -116,12 +116,10 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.setWindowTitle("Game Asset Checker")
         self.setMinimumWidth(400)
 
-        # remove the question mark button
         self.setWindowFlags(
             self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint
         )
 
-        # build UI
         self.build_ui()
         self.build_layout()
         self.connect_ui()
@@ -130,6 +128,11 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def build_ui(self):
         self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # rename UI
+        self.prefix_lineedit = QtWidgets.QLineEdit()
+        self.prefix_lineedit.setPlaceholderText("Rename prefix example: SM_Crate_")
+        self.rename_button = QtWidgets.QPushButton("Rename Selected")
 
         # checkboxes
         self.name_checkbox = QtWidgets.QCheckBox("Check Names")
@@ -166,6 +169,10 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         main_layout.addWidget(self.title_label)
 
+        main_layout.addWidget(QtWidgets.QLabel("Rename Prefix"))
+        main_layout.addWidget(self.prefix_lineedit)
+        main_layout.addWidget(self.rename_button)
+
         main_layout.addWidget(QtWidgets.QLabel("Validation Checks"))
         main_layout.addWidget(self.name_checkbox)
         main_layout.addWidget(self.transform_checkbox)
@@ -186,6 +193,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.validate_button.clicked.connect(self.run_validation)
         self.clear_button.clicked.connect(self.clear_report)
         self.fix_button.clicked.connect(self.fix_safe_issues)
+        self.rename_button.clicked.connect(self.rename_selected)
 
     # clear report
     def clear_report(self):
@@ -302,6 +310,34 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         add_report(self.report_box, "- Pivots centered.")
         add_report(self.report_box, "Safe fixes complete.")
+
+    # rename selected
+    def rename_selected(self, *args):
+        selection = get_selection()
+
+        if not selection:
+            add_report(self.report_box, "No objects selected.")
+            cmds.warning("No objects selected.")
+            return
+
+        prefix = self.prefix_lineedit.text()
+
+        if not prefix:
+            add_report(self.report_box, "Rename skipped: no prefix entered.")
+            cmds.warning("Enter a prefix before renaming.")
+            return
+
+        new_selection = []
+
+        for i, obj in enumerate(selection, start=1):
+            new_name = prefix + str(i).zfill(2)
+            renamed_obj = cmds.rename(obj, new_name)
+            new_selection.append(renamed_obj)
+
+        cmds.select(new_selection)
+
+        add_report(self.report_box, "")
+        add_report(self.report_box, "Renamed selected objects with prefix: " + prefix)
 
 
 # show window
