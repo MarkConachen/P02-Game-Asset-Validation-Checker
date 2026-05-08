@@ -157,6 +157,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.validate_button = QtWidgets.QPushButton("Run Validation")
         self.clear_button = QtWidgets.QPushButton("Clear Report")
         self.fix_button = QtWidgets.QPushButton("Fix Safe Issues")
+        self.prepare_button = QtWidgets.QPushButton("Prepare + Validate")
 
         # report box
         self.report_box = QtWidgets.QTextEdit()
@@ -183,6 +184,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         main_layout.addWidget(self.validate_button)
         main_layout.addWidget(self.fix_button)
+        main_layout.addWidget(self.prepare_button)
         main_layout.addWidget(self.clear_button)
 
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
@@ -194,14 +196,16 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.clear_button.clicked.connect(self.clear_report)
         self.fix_button.clicked.connect(self.fix_safe_issues)
         self.rename_button.clicked.connect(self.rename_selected)
+        self.prepare_button.clicked.connect(self.prepare_and_validate)
 
     # clear report
     def clear_report(self):
         self.report_box.clear()
 
     # run validation
-    def run_validation(self, *args):
-        self.clear_report()
+    def run_validation(self, clear_report=True, *args):
+        if clear_report:
+            self.clear_report()
 
         selection = get_selection()
 
@@ -338,6 +342,24 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         add_report(self.report_box, "")
         add_report(self.report_box, "Renamed selected objects with prefix: " + prefix)
+
+    # prepare and validate
+    def prepare_and_validate(self, *args):
+        self.clear_report()
+
+        add_report(self.report_box, "Running safe preparation tools...")
+        self.fix_safe_issues()
+
+        if self.prefix_lineedit.text():
+            self.rename_selected()
+        else:
+            add_report(self.report_box, "Rename skipped because no prefix was entered.")
+
+        add_report(self.report_box, "")
+        add_report(self.report_box, "Running validation again...")
+        add_report(self.report_box, "")
+
+        self.run_validation(clear_report=False)
 
 
 # show window
