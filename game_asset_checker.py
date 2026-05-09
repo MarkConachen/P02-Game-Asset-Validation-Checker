@@ -113,7 +113,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(GameAssetCheckerUI, self).__init__(parent)
 
-        self.setWindowTitle("Game Asset Checker")
+        self.setWindowTitle("Game Asset Pre-Flight Checker")
         self.setMinimumWidth(400)
 
         self.setWindowFlags(
@@ -126,8 +126,12 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
     # widgets
     def build_ui(self):
-        self.title_label = QtWidgets.QLabel("GAME ASSET CHECKER")
+        self.title_label = QtWidgets.QLabel("GAME ASSET PRE-FLIGHT CHECKER")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.title_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+
+        self.info_label = QtWidgets.QLabel("Checks selected assets for common game export problems.")
+        self.info_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # rename UI
         self.prefix_lineedit = QtWidgets.QLineEdit()
@@ -171,6 +175,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout = QtWidgets.QVBoxLayout(self)
 
         main_layout.addWidget(self.title_label)
+        main_layout.addWidget(self.info_label)
 
         main_layout.addWidget(QtWidgets.QLabel("Rename Prefix"))
         main_layout.addWidget(self.prefix_lineedit)
