@@ -163,6 +163,11 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.fix_button = QtWidgets.QPushButton("Fix Safe Issues")
         self.prepare_button = QtWidgets.QPushButton("Prepare + Validate")
         self.export_button = QtWidgets.QPushButton("Export Selected FBX")
+
+        # button colors
+        self.prepare_button.setStyleSheet("background-color: #6fbf73; font-weight: bold;")
+        self.clear_button.setStyleSheet("background-color: #f2a6a6; font-weight: bold;")
+
         self.export_button.setEnabled(False)
 
         # report box
