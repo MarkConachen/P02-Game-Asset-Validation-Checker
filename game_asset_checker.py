@@ -114,7 +114,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         super(GameAssetCheckerUI, self).__init__(parent)
 
         self.setWindowTitle("Game Asset Pre-Flight Checker")
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(500)
 
         self.setWindowFlags(
             self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint
@@ -173,7 +173,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         # report box
         self.report_box = QtWidgets.QTextEdit()
         self.report_box.setReadOnly(True)
-        self.report_box.setMinimumHeight(220)
+        self.report_box.setMinimumHeight(260)
 
     # layout
     def build_layout(self):
@@ -181,6 +181,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.info_label)
+        main_layout.addSpacing(10)
 
         # naming section
         naming_group = QtWidgets.QGroupBox("Naming")
@@ -204,6 +205,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         action_layout = QtWidgets.QVBoxLayout(action_group)
         action_layout.addWidget(self.validate_button)
         action_layout.addWidget(self.fix_button)
+        action_layout.addWidget(self.rename_button)
         action_layout.addWidget(self.prepare_button)
         action_layout.addWidget(self.export_button)
         action_layout.addWidget(self.clear_button)
@@ -245,7 +247,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             return
 
         add_report(self.report_box, "VALIDATION REPORT")
-        add_report(self.report_box, "-------------------------")
+        add_report(self.report_box, "------------------------------")
 
         total_issues = 0
 
@@ -255,6 +257,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
             issues = 0
 
+            # name checks
             if self.name_checkbox.isChecked():
                 if has_default_name(obj):
                     add_report(self.report_box, "- Warning: Object has a default Maya name.")
@@ -265,6 +268,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Naming check passed.")
 
+            # transform check
             if self.transform_checkbox.isChecked():
                 if has_bad_transforms(obj):
                     add_report(self.report_box, "- Warning: Rotation or scale is not frozen.")
@@ -272,6 +276,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Transform check passed.")
 
+            # origin check
             if self.origin_checkbox.isChecked():
                 if not is_at_origin(obj):
                     add_report(self.report_box, "- Warning: Object is not at world origin.")
@@ -279,6 +284,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- Origin check passed.")
 
+            # history check
             if self.history_checkbox.isChecked():
                 if has_history(obj):
                     add_report(self.report_box, "- Warning: Object has construction history.")
@@ -286,6 +292,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 else:
                     add_report(self.report_box, "- History check passed.")
 
+            # material check
             if self.material_checkbox.isChecked():
                 if has_material(obj):
                     add_report(self.report_box, "- Material check passed.")
@@ -293,6 +300,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                     add_report(self.report_box, "- Warning: Object does not have a material assigned.")
                     issues += 1
 
+            # geometry check
             if self.geometry_checkbox.isChecked():
                 geometry_issue = False
 
@@ -317,7 +325,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             total_issues += issues
 
         add_report(self.report_box, "")
-        add_report(self.report_box, "-------------------------")
+        add_report(self.report_box, "------------------------------")
 
         if total_issues == 0:
             add_report(self.report_box, "Final Result: Ready for export.")
@@ -338,7 +346,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         add_report(self.report_box, "")
         add_report(self.report_box, "FIXING SAFE ISSUES")
-        add_report(self.report_box, "-------------------------")
+        add_report(self.report_box, "------------------------------")
 
         cmds.makeIdentity(selection, apply=True, t=0, r=1, s=1, n=0)
         add_report(self.report_box, "- Rotation and scale frozen.")
