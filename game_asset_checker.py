@@ -158,6 +158,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.clear_button = QtWidgets.QPushButton("Clear Report")
         self.fix_button = QtWidgets.QPushButton("Fix Safe Issues")
         self.prepare_button = QtWidgets.QPushButton("Prepare + Validate")
+        self.export_button = QtWidgets.QPushButton("Export Selected FBX")
+        self.export_button.setEnabled(False)
 
         # report box
         self.report_box = QtWidgets.QTextEdit()
@@ -185,6 +187,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.validate_button)
         main_layout.addWidget(self.fix_button)
         main_layout.addWidget(self.prepare_button)
+        main_layout.addWidget(self.export_button)
         main_layout.addWidget(self.clear_button)
 
         main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
@@ -197,6 +200,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.fix_button.clicked.connect(self.fix_safe_issues)
         self.rename_button.clicked.connect(self.rename_selected)
         self.prepare_button.clicked.connect(self.prepare_and_validate)
+        self.export_button.clicked.connect(self.export_selected)
 
     # clear report
     def clear_report(self):
@@ -212,6 +216,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         if not selection:
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
+            self.export_button.setEnabled(False)
             return
 
         add_report(self.report_box, "VALIDATION REPORT")
@@ -288,7 +293,13 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
 
         add_report(self.report_box, "")
         add_report(self.report_box, "-------------------------")
-        add_report(self.report_box, "Total issues found: " + str(total_issues))
+
+        if total_issues == 0:
+            add_report(self.report_box, "Final Result: Ready for export.")
+            self.export_button.setEnabled(True)
+        else:
+            add_report(self.report_box, "Final Result: " + str(total_issues) + " issues found.")
+            self.export_button.setEnabled(False)
 
     # fix safe issues
     def fix_safe_issues(self, *args):
@@ -297,6 +308,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         if not selection:
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
+            self.export_button.setEnabled(False)
             return
 
         add_report(self.report_box, "")
@@ -315,6 +327,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "- Pivots centered.")
         add_report(self.report_box, "Safe fixes complete.")
 
+        self.export_button.setEnabled(False)
+
     # rename selected
     def rename_selected(self, *args):
         selection = get_selection()
@@ -322,6 +336,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         if not selection:
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
+            self.export_button.setEnabled(False)
             return
 
         prefix = self.prefix_lineedit.text()
@@ -343,9 +358,12 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "")
         add_report(self.report_box, "Renamed selected objects with prefix: " + prefix)
 
+        self.export_button.setEnabled(False)
+
     # prepare and validate
     def prepare_and_validate(self, *args):
         self.clear_report()
+        self.export_button.setEnabled(False)
 
         add_report(self.report_box, "Running safe preparation tools...")
         self.fix_safe_issues()
@@ -360,6 +378,52 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "")
 
         self.run_validation(clear_report=False)
+
+    # export selected objects
+    def export_selected(self, *args):
+        selection = get_selection()
+
+        if not selection:
+            add_report(self.report_box, "Export failed: no objects selected.")
+            cmds.warning("No objects selected.")
+            self.export_button.setEnabled(False)
+            return
+
+        file_path = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export Selected Asset",
+            "",
+            "FBX Files (*.fbx)"
+        )[0]
+
+        if not file_path:
+            add_report(self.report_box, "Export canceled.")
+            return
+
+        if not file_path.endswith(".fbx"):
+            file_path += ".fbx"
+
+        try:
+            if not cmds.pluginInfo("fbxmaya", query=True, loaded=True):
+                cmds.loadPlugin("fbxmaya")
+
+            cmds.file(
+                file_path,
+                force=True,
+                options="v=0;",
+                type="FBX export",
+                exportSelected=True
+            )
+
+            add_report(self.report_box, "")
+            add_report(self.report_box, "Export complete:")
+            add_report(self.report_box, file_path)
+
+        except Exception as error:
+            add_report(self.report_box, "")
+            add_report(self.report_box, "Export failed.")
+            add_report(self.report_box, str(error))
+            cmds.warning("Export failed.")
 
 
 # show window
