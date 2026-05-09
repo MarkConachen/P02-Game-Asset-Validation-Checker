@@ -177,26 +177,41 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         main_layout.addWidget(self.title_label)
         main_layout.addWidget(self.info_label)
 
-        main_layout.addWidget(QtWidgets.QLabel("Rename Prefix"))
-        main_layout.addWidget(self.prefix_lineedit)
-        main_layout.addWidget(self.rename_button)
+        # naming section
+        naming_group = QtWidgets.QGroupBox("Naming")
+        naming_layout = QtWidgets.QVBoxLayout(naming_group)
+        naming_layout.addWidget(QtWidgets.QLabel("Rename Prefix"))
+        naming_layout.addWidget(self.prefix_lineedit)
+        naming_layout.addWidget(self.rename_button)
 
-        main_layout.addWidget(QtWidgets.QLabel("Validation Checks"))
-        main_layout.addWidget(self.name_checkbox)
-        main_layout.addWidget(self.transform_checkbox)
-        main_layout.addWidget(self.origin_checkbox)
-        main_layout.addWidget(self.history_checkbox)
-        main_layout.addWidget(self.material_checkbox)
-        main_layout.addWidget(self.geometry_checkbox)
+        # validation section
+        checks_group = QtWidgets.QGroupBox("Validation Checks")
+        checks_layout = QtWidgets.QVBoxLayout(checks_group)
+        checks_layout.addWidget(self.name_checkbox)
+        checks_layout.addWidget(self.transform_checkbox)
+        checks_layout.addWidget(self.origin_checkbox)
+        checks_layout.addWidget(self.history_checkbox)
+        checks_layout.addWidget(self.material_checkbox)
+        checks_layout.addWidget(self.geometry_checkbox)
 
-        main_layout.addWidget(self.validate_button)
-        main_layout.addWidget(self.fix_button)
-        main_layout.addWidget(self.prepare_button)
-        main_layout.addWidget(self.export_button)
-        main_layout.addWidget(self.clear_button)
+        # action section
+        action_group = QtWidgets.QGroupBox("Actions")
+        action_layout = QtWidgets.QVBoxLayout(action_group)
+        action_layout.addWidget(self.validate_button)
+        action_layout.addWidget(self.fix_button)
+        action_layout.addWidget(self.prepare_button)
+        action_layout.addWidget(self.export_button)
+        action_layout.addWidget(self.clear_button)
 
-        main_layout.addWidget(QtWidgets.QLabel("Validation Report"))
-        main_layout.addWidget(self.report_box)
+        # report section
+        report_group = QtWidgets.QGroupBox("Validation Report")
+        report_layout = QtWidgets.QVBoxLayout(report_group)
+        report_layout.addWidget(self.report_box)
+
+        main_layout.addWidget(naming_group)
+        main_layout.addWidget(checks_group)
+        main_layout.addWidget(action_group)
+        main_layout.addWidget(report_group)
 
     # connect buttons
     def connect_ui(self):
