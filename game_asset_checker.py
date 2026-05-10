@@ -113,6 +113,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(GameAssetCheckerUI, self).__init__(parent)
 
+        self.failed_objects = []
+
         self.setWindowTitle("Game Asset Pre-Flight Checker")
         self.setMinimumWidth(500)
 
@@ -162,12 +164,14 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.clear_button = QtWidgets.QPushButton("Clear Report")
         self.fix_button = QtWidgets.QPushButton("Fix Safe Issues")
         self.prepare_button = QtWidgets.QPushButton("Prepare + Validate")
+        self.select_failed_button = QtWidgets.QPushButton("Select Failed Objects")
         self.export_button = QtWidgets.QPushButton("Export Selected FBX")
 
         # button colors
         self.prepare_button.setStyleSheet("background-color: #6fbf73; font-weight: bold;")
         self.clear_button.setStyleSheet("background-color: #f2a6a6; font-weight: bold;")
 
+        self.select_failed_button.setEnabled(False)
         self.export_button.setEnabled(False)
 
         # report box
@@ -207,6 +211,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         action_layout.addWidget(self.fix_button)
         action_layout.addWidget(self.rename_button)
         action_layout.addWidget(self.prepare_button)
+        action_layout.addWidget(self.select_failed_button)
         action_layout.addWidget(self.export_button)
         action_layout.addWidget(self.clear_button)
 
@@ -227,6 +232,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         self.fix_button.clicked.connect(self.fix_safe_issues)
         self.rename_button.clicked.connect(self.rename_selected)
         self.prepare_button.clicked.connect(self.prepare_and_validate)
+        self.select_failed_button.clicked.connect(self.select_failed_objects)
         self.export_button.clicked.connect(self.export_selected)
 
     # clear report
@@ -238,12 +244,15 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         if clear_report:
             self.clear_report()
 
+        self.failed_objects = []
+
         selection = get_selection()
 
         if not selection:
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
             self.export_button.setEnabled(False)
+            self.select_failed_button.setEnabled(False)
             return
 
         add_report(self.report_box, "VALIDATION REPORT")
@@ -321,6 +330,7 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
                 add_report(self.report_box, "- Result: Asset passed current checks.")
             else:
                 add_report(self.report_box, "- Result: " + str(issues) + " issue(s) found.")
+                self.failed_objects.append(obj)
 
             total_issues += issues
 
@@ -330,9 +340,12 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         if total_issues == 0:
             add_report(self.report_box, "Final Result: Ready for export.")
             self.export_button.setEnabled(True)
+            self.select_failed_button.setEnabled(False)
         else:
             add_report(self.report_box, "Final Result: " + str(total_issues) + " issues found.")
+            add_report(self.report_box, "Use Select Failed Objects to find the assets that need fixing.")
             self.export_button.setEnabled(False)
+            self.select_failed_button.setEnabled(True)
 
     # fix safe issues
     def fix_safe_issues(self, *args):
@@ -342,6 +355,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
             self.export_button.setEnabled(False)
+            self.select_failed_button.setEnabled(False)
+            self.failed_objects = []
             return
 
         add_report(self.report_box, "")
@@ -361,6 +376,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "Safe fixes complete.")
 
         self.export_button.setEnabled(False)
+        self.select_failed_button.setEnabled(False)
+        self.failed_objects = []
 
     # rename selected
     def rename_selected(self, *args):
@@ -370,6 +387,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             add_report(self.report_box, "No objects selected.")
             cmds.warning("No objects selected.")
             self.export_button.setEnabled(False)
+            self.select_failed_button.setEnabled(False)
+            self.failed_objects = []
             return
 
         prefix = self.prefix_lineedit.text()
@@ -392,11 +411,44 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
         add_report(self.report_box, "Renamed selected objects with prefix: " + prefix)
 
         self.export_button.setEnabled(False)
+        self.select_failed_button.setEnabled(False)
+        self.failed_objects = []
+
+    # select failed objects
+    def select_failed_objects(self, *args):
+        if not self.failed_objects:
+            add_report(self.report_box, "")
+            add_report(self.report_box, "No failed objects stored. Run validation first.")
+            cmds.warning("No failed objects stored.")
+            return
+
+        existing_failed_objects = []
+
+        for obj in self.failed_objects:
+            if cmds.objExists(obj):
+                existing_failed_objects.append(obj)
+
+        if not existing_failed_objects:
+            add_report(self.report_box, "")
+            add_report(self.report_box, "Failed objects no longer exist in the scene.")
+            cmds.warning("Failed objects no longer exist.")
+            self.select_failed_button.setEnabled(False)
+            return
+
+        cmds.select(existing_failed_objects)
+
+        add_report(self.report_box, "")
+        add_report(self.report_box, "Selected failed objects:")
+
+        for obj in existing_failed_objects:
+            add_report(self.report_box, "- " + obj)
 
     # prepare and validate
     def prepare_and_validate(self, *args):
         self.clear_report()
         self.export_button.setEnabled(False)
+        self.select_failed_button.setEnabled(False)
+        self.failed_objects = []
 
         add_report(self.report_box, "Running safe preparation tools...")
         self.fix_safe_issues()
@@ -420,6 +472,8 @@ class GameAssetCheckerUI(QtWidgets.QDialog):
             add_report(self.report_box, "Export failed: no objects selected.")
             cmds.warning("No objects selected.")
             self.export_button.setEnabled(False)
+            self.select_failed_button.setEnabled(False)
+            self.failed_objects = []
             return
 
         file_path = QtWidgets.QFileDialog.getSaveFileName(
